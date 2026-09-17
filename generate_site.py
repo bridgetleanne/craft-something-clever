@@ -417,6 +417,15 @@ def main():
 
     print(f"\nGenerated {len(items)} item pages, {len(items)} QR codes, and index.html")
 
+    # An item renamed in the CSV gets a new slug; its old page and QR code would
+    # otherwise linger and ship as dead URLs.
+    current = {slug for _, slug in items}
+    for directory, ext in [(ITEMS_DIR, ".html"), (QR_DIR, ".png")]:
+        for fname in os.listdir(directory):
+            if fname.endswith(ext) and fname[: -len(ext)] not in current:
+                os.remove(os.path.join(directory, fname))
+                print(f"Removed orphaned file: {os.path.basename(directory)}/{fname}")
+
 
 if __name__ == "__main__":
     main()
