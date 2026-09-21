@@ -10,8 +10,8 @@ import qrcode
 SITE_BASE_URL = "https://bridgetleanne.github.io/craft-something-clever"
 ETSY_URL = "https://www.etsy.com/shop/CraftSomethingClever"
 
-CARE_BLURB = (
-    "Hand wash in cold water and lay flat to dry. Avoid the dryer &mdash; "
+DEFAULT_CARE_BLURB = (
+    "Hand wash in cold water and lay flat to dry. Avoid the dryer — "
     "heat can cause shrinking or misshape crocheted pieces, especially "
     "cotton and acrylic blends. Reshape gently while damp if needed."
 )
@@ -277,10 +277,13 @@ def item_page_html(item):
         ("Fiber content", "Fiber Content"),
         ("Colorway", "Colorway"),
         ("Hook size", "Hook Size"),
+        ("Year made", "Year Made"),
     ]:
         val = item[key].strip()
         if val:
             detail_rows += f'<div class="row"><dt>{esc(label)}</dt><dd>{esc(val)}</dd></div>\n'
+
+    care_blurb = item.get("Care Instructions", "").strip() or DEFAULT_CARE_BLURB
 
     notes = item["Notes"].strip()
     notes_card = ""
@@ -334,7 +337,7 @@ def item_page_html(item):
 
   <div class="card">
     <h2>Care</h2>
-    <p class="care">{CARE_BLURB}</p>
+    <p class="care">{esc(care_blurb)}</p>
   </div>
 
   <div class="actions">

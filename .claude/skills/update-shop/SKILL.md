@@ -23,15 +23,21 @@ Slugs come from the Item Name, so **renaming an item changes its URL**.
 ## Steps
 
 1. **Read `items.csv`** and check the new or changed rows before building.
-   Columns: Item Name, Description, Yarn, Fiber Content, Colorway, Hook Size,
-   Quality Tester, Notes, Pattern Link.
+   Columns: ID, Item Name, Description, Yarn, Fiber Content, Colorway, Hook Size,
+   Quality Tester, Notes, Pattern Link, Year Made, Care Instructions.
 
    Watch for:
+   - **ID** is the primary key for each row. It's never shown on the item page —
+     just keep it unique when adding a new item (highest existing ID + 1).
    - **Pattern Link must be a real URL** (starts with `http`). Anything else is
      rendered as a "One of a kind" freehand note instead of a pattern button —
      correct for her handmade-freehand pieces, wrong if she meant to paste a link.
      Never invent or guess a pattern URL; ask her for it.
    - **Quality Tester** should be George, Winston, or Josie (her dogs).
+   - **Year Made** and **Care Instructions** are shown on the item page. Blank
+     Year Made just omits that row. Blank Care Instructions falls back to the
+     shared `DEFAULT_CARE_BLURB` in `generate_site.py` — most items use the
+     default, so only fill this cell in when an item needs different care.
    - Blank cells are fine — those sections are omitted from the page.
 
 2. **Run the generator:**
@@ -77,7 +83,7 @@ Slugs come from the Item Name, so **renaming an item changes its URL**.
   editing the templates in `generate_site.py`, not the generated HTML — generated
   files are overwritten on every run.
 - **Shared content** lives in constants at the top of `generate_site.py`:
-  `CARE_BLURB`, `THANK_YOU_HTML`, `ETSY_URL`, `SITE_BASE_URL`.
+  `DEFAULT_CARE_BLURB`, `THANK_YOU_HTML`, `ETSY_URL`, `SITE_BASE_URL`.
 - Pages are styled for phones first — buyers scan these at a market table.
 
 ## If she wants to switch to Supabase
