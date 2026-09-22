@@ -215,37 +215,6 @@ dl { margin: 0; }
 .make-your-own.freehand p {
   margin-bottom: 0;
 }
-.back {
-  display: inline-block;
-  margin-top: 2rem;
-  color: var(--muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-.shop-list {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0 0;
-  display: grid;
-  gap: 0.75rem;
-}
-.shop-list a {
-  display: block;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem 1.1rem;
-  text-decoration: none;
-  color: var(--ink);
-  font-weight: 600;
-}
-.shop-list a span {
-  display: block;
-  font-weight: 400;
-  color: var(--muted);
-  font-size: 0.88rem;
-  margin-top: 0.2rem;
-}
 footer {
   margin-top: 2.5rem;
   text-align: center;
@@ -283,7 +252,7 @@ def item_page_html(item):
         if val:
             detail_rows += f'<div class="row"><dt>{esc(label)}</dt><dd>{esc(val)}</dd></div>\n'
 
-    care_blurb = item.get("Care Instructions", "").strip() or DEFAULT_CARE_BLURB
+    care_blurb = item.get("Care instructions", "").strip() or DEFAULT_CARE_BLURB
 
     notes = item["Notes"].strip()
     notes_card = ""
@@ -344,38 +313,6 @@ def item_page_html(item):
     <a class="btn" href="{ETSY_URL}" target="_blank" rel="noopener">Visit the Etsy shop</a>
   </div>
 
-  <a class="back" href="../index.html">&larr; Back to all items</a>
-  <footer>Handmade by Craft Something Clever<br><span class="credit">Site built by Claude, items and patterns by people.</span></footer>
-</div>
-</body>
-</html>
-"""
-
-
-def index_html(items):
-    list_items = ""
-    for item, slug in items:
-        list_items += f"""<li><a href="items/{slug}.html">{esc(item['Item Name'])}<span>{esc(item['Description'])}</span></a></li>\n"""
-
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Craft Something Clever</title>
-<link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-<div class="wrap">
-  <p class="eyebrow">Craft Something Clever</p>
-  <h1>Handmade crochet, one skein at a time</h1>
-  <p class="desc">Scan the tag on any item to land here, or browse everything below.</p>
-  <ul class="shop-list">
-    {list_items}
-  </ul>
-  <div class="actions">
-    <a class="btn primary" href="{ETSY_URL}" target="_blank" rel="noopener">Visit the Etsy shop</a>
-  </div>
   <footer>Handmade by Craft Something Clever<br><span class="credit">Site built by Claude, items and patterns by people.</span></footer>
 </div>
 </body>
@@ -401,6 +338,9 @@ def main():
         reader = csv.DictReader(f)
         rows = [r for r in reader if r.get("Item Name", "").strip()]
 
+    skipped = [r["Item Name"] for r in rows if r.get("Include on site", "").strip().lower() not in ("y", "yes")]
+    rows = [r for r in rows if r.get("Include on site", "").strip().lower() in ("y", "yes")]
+
     items = []
     for row in rows:
         slug = slugify(row["Item Name"])
@@ -415,13 +355,12 @@ def main():
         make_qr(url, os.path.join(QR_DIR, f"{slug}.png"))
         print(f"{item['Item Name']!s:45s} -> {url}")
 
-    with open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8") as f:
-        f.write(index_html(items))
+    print(f"\nGenerated {len(items)} item pages and {len(items)} QR codes")
+    if skipped:
+        print(f"Skipped (Include on site = n): {', '.join(skipped)}")
 
-    print(f"\nGenerated {len(items)} item pages, {len(items)} QR codes, and index.html")
-
-    # An item renamed in the CSV gets a new slug; its old page and QR code would
-    # otherwise linger and ship as dead URLs.
+    # An item renamed or excluded in the CSV drops out of `current`; its old
+    # page and QR code would otherwise linger and ship as dead URLs.
     current = {slug for _, slug in items}
     for directory, ext in [(ITEMS_DIR, ".html"), (QR_DIR, ".png")]:
         for fname in os.listdir(directory):

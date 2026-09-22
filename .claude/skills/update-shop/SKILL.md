@@ -14,30 +14,39 @@ Repo: https://github.com/bridgetleanne/craft-something-clever
 ## How it fits together
 
 `items.csv` is the single source of truth. `generate_site.py` reads it and writes
-`index.html`, `items/<slug>.html`, and `qr/<slug>.png` — one page and one QR code
-per row. Each QR code encodes that item's live URL. Nothing updates on the live
-site until the generator runs *and* the result is committed and pushed.
+`items/<slug>.html` and `qr/<slug>.png` — one page and one QR code per row that
+has **Include on site** set to `y`. Each QR code encodes that item's live URL.
+Nothing updates on the live site until the generator runs *and* the result is
+committed and pushed. There is no index/browse-all page — each QR code is the
+only way to reach its item page.
 
 Slugs come from the Item Name, so **renaming an item changes its URL**.
 
 ## Steps
 
 1. **Read `items.csv`** and check the new or changed rows before building.
-   Columns: ID, Item Name, Description, Yarn, Fiber Content, Colorway, Hook Size,
-   Quality Tester, Notes, Pattern Link, Year Made, Care Instructions.
+   Columns: ID, Number, Year Made, Include on site, Item Name, Description,
+   Yarn, Fiber Content, Colorway, Hook Size, Quality Tester, Notes,
+   Care instructions, Pattern Link.
 
    Watch for:
-   - **ID** is the primary key for each row. It's never shown on the item page —
-     just keep it unique when adding a new item (highest existing ID + 1).
+   - **ID** is the primary key for each row (e.g. `PPRB-1-26`), built from an
+     abbreviation, the **Number** (variant count within that name), and Year
+     Made. It's never shown on the item page — just keep it unique when adding
+     a new item.
+   - **Include on site** (`y`/`n`) controls whether a row gets a page and QR
+     code at all. `n` rows are skipped entirely and any previously-generated
+     page/QR for them is removed as an orphan — that's expected, not a bug,
+     for items that aren't making it to a given market.
    - **Pattern Link must be a real URL** (starts with `http`). Anything else is
      rendered as a "One of a kind" freehand note instead of a pattern button —
      correct for her handmade-freehand pieces, wrong if she meant to paste a link.
      Never invent or guess a pattern URL; ask her for it.
    - **Quality Tester** should be George, Winston, or Josie (her dogs).
-   - **Year Made** and **Care Instructions** are shown on the item page. Blank
-     Year Made just omits that row. Blank Care Instructions falls back to the
-     shared `DEFAULT_CARE_BLURB` in `generate_site.py` — most items use the
-     default, so only fill this cell in when an item needs different care.
+   - **Year Made** and **Care instructions** are shown on the item page. Blank
+     Year Made just omits that row. Blank Care instructions falls back to the
+     shared `DEFAULT_CARE_BLURB` in `generate_site.py` — fill the cell in only
+     when an item needs different care than the default.
    - Blank cells are fine — those sections are omitted from the page.
 
 2. **Run the generator:**
@@ -46,10 +55,15 @@ Slugs come from the Item Name, so **renaming an item changes its URL**.
    ```
    It prints each item's live URL, then reports any orphaned files it removed.
 
-3. **Check for renamed items.** If the generator removed an orphaned file, an
-   item's URL changed. Tell her explicitly which one, because **any already-printed
-   QR label for that item now points at a dead page** and needs reprinting. This is
-   the one failure mode that costs her physical work, so never let it pass silently.
+3. **Check why files were orphaned.** The generator removes any page/QR whose
+   slug is no longer current — that happens for two different reasons, and
+   they need different responses:
+   - **Renamed but still `y`**: the item's URL changed. Tell her explicitly
+     which one, because **any already-printed QR label for that item now
+     points at a dead page** and needs reprinting. This is the one failure
+     mode that costs her physical work, so never let it pass silently.
+   - **Switched to `n`**: expected cleanup for an item skipping this market,
+     no reprint needed.
 
 4. **Review, commit, and push:**
    ```bash

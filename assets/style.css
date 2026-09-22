@@ -165,37 +165,6 @@ dl { margin: 0; }
 .make-your-own.freehand p {
   margin-bottom: 0;
 }
-.back {
-  display: inline-block;
-  margin-top: 2rem;
-  color: var(--muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-.shop-list {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0 0;
-  display: grid;
-  gap: 0.75rem;
-}
-.shop-list a {
-  display: block;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem 1.1rem;
-  text-decoration: none;
-  color: var(--ink);
-  font-weight: 600;
-}
-.shop-list a span {
-  display: block;
-  font-weight: 400;
-  color: var(--muted);
-  font-size: 0.88rem;
-  margin-top: 0.2rem;
-}
 footer {
   margin-top: 2.5rem;
   text-align: center;
