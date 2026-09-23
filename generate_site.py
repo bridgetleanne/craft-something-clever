@@ -248,7 +248,9 @@ def item_page_html(item):
         ("Hook size", "Hook Size"),
         ("Year made", "Year Made"),
     ]:
-        val = item[key].strip()
+        # A cell can hold more than one value on separate lines (e.g. two yarns
+        # blended in one piece) — join them so multi-value cells render as one row.
+        val = ", ".join(p.strip() for p in item[key].splitlines() if p.strip())
         if val:
             detail_rows += f'<div class="row"><dt>{esc(label)}</dt><dd>{esc(val)}</dd></div>\n'
 
